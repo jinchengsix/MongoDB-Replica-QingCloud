@@ -8,15 +8,15 @@
    "advanced_actions": ["change_vxnet", "scale_horizontal"],
    "upgrading_policy": "parallel",
    "upgrade_policy": [
-        "appv-omli6gvn"
+        
     ],
    "nodes":[{
         "role":"replica",
         "container":{
             "type":"kvm",
             "sriov_nic": true,
-            "zone": "pek3",
-            "image": "img-3k5rzyls"
+            "zone": "pekt3",
+            "image": "img-kd66qous"
         },
         "instance_class":{{cluster.replica.instance_class}},
         "count":{{cluster.replica.count}},

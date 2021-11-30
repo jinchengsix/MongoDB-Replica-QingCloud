@@ -96,7 +96,9 @@ clusterPreInit() {
   # folder
   mkdir -p $MONGODB_DATA_PATH $MONGODB_LOG_PATH $MONGODB_CONF_PATH
   chown -R mongod:svc $MONGODB_DATA_PATH $MONGODB_LOG_PATH $MONGODB_CONF_PATH
-  chown -R zabbix:zabbix $ZABBIX_LOG_PATH
+  # can not support zabbix in arm64 env
+  #chown -R zabbix:zabbix $ZABBIX_LOG_PATH
+  chown -R caddy:caddy $CADDY_LOG_PATH
   # first create flag
   touch $NODE_FIRST_CREATE_FLAG_FILE
   # repl.key
