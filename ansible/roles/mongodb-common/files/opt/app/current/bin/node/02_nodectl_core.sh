@@ -7,8 +7,11 @@ updateMongoConf() {
 }
 
 updateHostsInfo() {
+  local tmpflag=no
   if ! diff $HOSTS_INFO_FILE $HOSTS_INFO_FILE.new; then
+    if isNetPortChanged; then tmpflag=yes; fi
     cat $HOSTS_INFO_FILE.new > $HOSTS_INFO_FILE
+    if [ $tmpflag = "yes" ]; then createMongoConf; fi
   fi
 }
 
@@ -81,9 +84,9 @@ refreshOplogSize() {
 }
 
 start() {
-  if [ $CHANGE_VXNET_FLAG = "true" ]; then
+  if [ $CHANGE_VXNET_FLAG = "true" ] || isNetPortChanged; then
     changeReplNodeNetInfo
-    log "vxnet has been changed!"
+    log "host info has been changed!"
   fi
   # updat conf files
   updateHostsInfo
@@ -205,7 +208,7 @@ init() {
   enableHealthCheck
   # except scaleIn and scaleOut
   if [ $ADDING_HOSTS_FLAG = "true" ] || [ $DELETING_HOSTS_FLAG = "true" ] ; then return 0; fi
-  
+  local cnt=${#NODE_LIST[@]}
   local slist=($(getInitNodeList))
   if [ ! $(getSid ${slist[0]}) = $MY_SID ]; then return 0; fi
   log "init replicaset begin ..."
@@ -216,7 +219,7 @@ init() {
   retry 60 3 0 msAddLocalSysUser
   log "add root user"
   retry 60 3 0 msAddUserRoot -P $MY_PORT -u $DB_QC_USER -p $(cat $DB_QC_LOCAL_PASS_FILE)
-  log "add zabbix user"
+  log "add qc_monitor user"
   retry 60 3 0 msAddUserMonitor -P $MY_PORT -u $DB_QC_USER -p $(cat $DB_QC_LOCAL_PASS_FILE)
   log "update QingCloudControl database"
   msUpdateQingCloudControl -P $MY_PORT -u $DB_QC_USER -p $(cat $DB_QC_LOCAL_PASS_FILE)

@@ -33,7 +33,7 @@
         {
           "key": "resource_group",
           "label": "Express Configuration",
-          "description": "Test: Replica Node * 1, 2c8g, 200G</br>Prod: Replica Node * 3, 1c2g, 50G",
+          "description": "Test: Node * 1, 2c8g, 200G</br>Prod: Node * 3, 1c2g, 50G",
           "type": "string",
           "default": "Prod",
           "range": [
@@ -89,6 +89,7 @@
               "label": "Memory",
               "type": "integer",
               "range": [
+                1024,
                 2048,
                 4096,
                 8192,
@@ -183,6 +184,17 @@
       "type": "array",
       "properties": [
         {
+          "key": "conf.net.port",
+          "label": "net.port",
+          "description": "mongod's listening port, Can NOT be set to 27099, need restart mongod.service if being changed, default value: 27017",
+          "type": "integer",
+          "default": 27017,
+          "pattern": "^(?!27099)(102[4-9]|10[3-9]\\d|1[1-9]\\d\\d|[2-9]\\d{3}|[1-5]\\d{4}|6[0-4]\\d{3}|65[0-4]\\d{2}|655[0-2]\\d|6553[0-5])$",
+          "required": "yes",
+          "min": 1025,
+          "max": 65535
+        },
+        {
           "key": "conf.userPass",
           "label": "User root's Password",
           "description": "Must contain a combination of uppercase and lowercase letters and numbers, special characters can be used (including @#%&*()_+-=), and the length is between 8-32",
@@ -222,7 +234,7 @@
         },
         {
           "key": "conf.zabbix.agent.port",
-          "label": "Zabbix agent's listening port",
+          "label": "Zabbix agent2's listening port",
           "description": "Default value: 10050",
           "type": "integer",
           "default": 10050,
@@ -244,7 +256,7 @@
         },
         {
           "key": "conf.node.exporter.enabled",
-          "label": "node.exporter.enabled.label",
+          "label": "Enable node exporter or not",
           "description": "Default value false",
           "default": "no",
           "type": "string",
@@ -256,7 +268,7 @@
         },
         {
             "key": "conf.node.exporter.port",
-            "label": "node.exporter.port.label",
+            "label": "Node exporter's port",
             "description": "Default value 9500",
             "default": 9500,
             "type": "integer",
@@ -266,7 +278,7 @@
         },
         {
           "key": "conf.mongodb.exporter.enabled",
-          "label": "mongodb.exporter.enabled.label",
+          "label": "Enabled mongodb exporter or not",
           "description": "Default value false",
           "default": "no",
           "type": "string",
@@ -278,7 +290,7 @@
         },
         {
             "key": "conf.mongodb.exporter.port",
-            "label": "mongodb.exporter.port.label",
+            "label": "Mongodb exporter's port",
             "description": "Default value 9001",
             "default": 9001,
             "type": "integer",
@@ -289,7 +301,7 @@
 
         {
             "key": "conf.mongoshake.enabled",
-            "label": "mongoshake.enabled.label",
+            "label": "Enabled mongoshake or not",
             "description": "Default value false",
             "default": "no",
             "type": "string",
@@ -301,7 +313,7 @@
         },
         {
           "key": "conf.mongoshake.type",
-          "label": "mongoshake.type.label",
+          "label": "Mongoshake: sync type",
           "description": "[all, full, incr], default value all",
           "default": "all",
           "type": "string",
@@ -314,7 +326,7 @@
         },
         {
           "key": "conf.mongoshake.source",
-          "label": "mongoshake.source.label",
+          "label": "Mongoshake: source address of MongoDB",
           "description": "Format: ip:port, for example: 1.1.1.1:27017",
           "type": "string",
           "default": "127.0.0.1:27017",
@@ -322,7 +334,7 @@
         },
         {
           "key": "conf.mongoshake.source.user",
-          "label": "mongoshake.source.user.label",
+          "label": "Mongoshake: source's user of MongoDB",
           "description": "Source's user",
           "type": "string",
           "default": "root",
@@ -330,7 +342,7 @@
         },
         {
           "key": "conf.mongoshake.source.password",
-          "label": "mongoshake.source.password.label",
+          "label": "Mongoshake: source user's password of MongoDB",
           "description": "Must contain a combination of uppercase and lowercase letters and numbers, special characters can be used (including @#%&*()_+-=), and the length is between 8-32",
           "type": "password",
           "pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z@#\\%\\&\\*\\(\\)\\_\\+\\-\\=]{8,32}$",
@@ -339,7 +351,7 @@
         },
         {
           "key": "conf.mongoshake.destination",
-          "label": "mongoshake.destination.label",
+          "label": "Mongoshake: destination address of MongoDB",
           "description": "Format: ip:port, for example: 1.1.1.1:27017",
           "type": "string",
           "default": "127.0.0.1:27017",
@@ -347,7 +359,7 @@
         },
         {
           "key": "conf.mongoshake.destination.user",
-          "label": "mongoshake.destination.user.label",
+          "label": "Mongoshake: destination's user of MongoDB",
           "description": "Destination's user",
           "type": "string",
           "default": "root",
@@ -355,7 +367,7 @@
         },
         {
           "key": "conf.mongoshake.destination.password",
-          "label": "mongoshake.destination.password.label",
+          "label": "Mongoshake: destination user's password of MongoDB",
           "description": "Must contain a combination of uppercase and lowercase letters and numbers, special characters can be used (including @#%&*()_+-=), and the length is between 8-32",
           "type": "password",
           "pattern": "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z@#\\%\\&\\*\\(\\)\\_\\+\\-\\=]{8,32}$",
@@ -382,7 +394,7 @@
         },
         {
           "key": "conf.caddy.enabled",
-          "label": "caddy.enabled.label",
+          "label": "Enabled caddy or not",
           "description": "Default value false",
           "default": "no",
           "type": "string",
@@ -397,18 +409,6 @@
           "description": "The role configuration properties of the application",
           "type": "array",
           "properties": [
-            {
-              "key": "conf.net.port",
-              "label": "net.port",
-              "description": "Can NOT be set to 27099, can NOT be changed if the cluster has been created, default value: 27017",
-              "type": "integer",
-              "default": 27017,
-              "pattern": "^(?!27099)(102[4-9]|10[3-9]\\d|1[1-9]\\d\\d|[2-9]\\d{3}|[1-5]\\d{4}|6[0-4]\\d{3}|65[0-4]\\d{2}|655[0-2]\\d|6553[0-5])$",
-              "changeable": false,
-              "required": "no",
-              "min": 1025,
-              "max": 65535
-            },
             {
               "key": "conf.setParameter.cursorTimeoutMillis",
               "label": "setParameter.cursorTimeoutMillis",

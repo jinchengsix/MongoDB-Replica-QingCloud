@@ -451,6 +451,7 @@
         }
    }],
    "env": {
+        "conf.net.port": {{env.conf.net.port}},
         "conf.userPass": {{env.conf.userPass}},
         "conf.monitor.userPass": {{env.conf.monitor.userPass}},
         "conf.storage.engine": {{env.conf.storage.engine}},
@@ -474,7 +475,7 @@
         "conf.caddy.user": {{env.conf.caddy.user}},
         "conf.caddy.password": {{env.conf.caddy.password}},
         "conf.caddy.enabled": {{env.conf.caddy.enabled}},
-        "replica.conf.net.port": {{env.replica.conf.net.port}},
+        
         "replica.conf.setParameter.cursorTimeoutMillis": {{env.replica.conf.setParameter.cursorTimeoutMillis}},
         "replica.conf.operationProfiling.mode": {{env.replica.conf.operationProfiling.mode}},
         "replica.conf.operationProfiling.slowOpThresholdMs": {{env.replica.conf.operationProfiling.slowOpThresholdMs}},
@@ -490,7 +491,7 @@
    "display_tabs": {
         "FCV": {
             "cmd": "appctl showFcv",
-            "description": "Feature compatibility version, can be changed through 'changeFcv' menu, please refer to [official documents](https://docs.mongodb.com/v4.0/reference/command/setFeatureCompatibilityVersion/) to get more information.<br/>Caution1: if you use 4.0 features in your database configuration, you can't downgrade to fcv 3.6 anymore!<br/>Caution2: if you upgrade your cluster from 3.6 to current version, fcv remains 3.6. Please test your server&client thoroughly before changing fcv to 4.0!"
+            "description": "Feature compatibility version, can be changed through 'changeFcv' menu, please refer to [official documents](https://docs.mongodb.com/v3.6/reference/command/setFeatureCompatibilityVersion/) to get more information.<br/>Caution1: if you use 3.6 features in your database configuration, you can't downgrade to fcv 3.4 anymore!<br/>Caution2: if you upgrade your cluster from 3.4 to current version, fcv remains 3.4. Please test your server&client thoroughly before changing fcv to 3.6!"
         },
         "Node Status": {
             "cmd": "appctl showNodeStatus",
@@ -503,11 +504,23 @@
    },
    "endpoints": {
         "MongoDB": {
-            "port": {{env.replica.conf.net.port}},
+            "port": {{env.conf.net.port}},
             "protocol": "TCP"
         },
         "Zabbix Agent2": {
             "port": {{env.conf.zabbix.agent.port}},
+            "protocol": "TCP"
+        },
+        "Node Exporter": {
+            "port": {{env.conf.node.exporter.port}},
+            "protocol": "TCP"
+        },
+        "MongoDB Exporter": {
+            "port": {{env.conf.mongodb.exporter.port}},
+            "protocol": "TCP"
+        },
+        "Caddy": {
+            "port": 8000,
             "protocol": "TCP"
         }
    },

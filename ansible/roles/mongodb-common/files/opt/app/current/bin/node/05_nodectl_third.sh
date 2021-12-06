@@ -10,7 +10,6 @@ reloadZabbix() {
 
 reloadNodeExporter() {
   systemctl daemon-reload
-  log "start to reload node_exporter"
   if [ $NODE_EXPORTER_ENABLED = "yes" ]; then
     systemctl restart node_exporter.service || :
     log "node_exporter restarted"
@@ -18,22 +17,10 @@ reloadNodeExporter() {
     systemctl stop node_exporter.service || :
     log "node_exporter stopped"
   fi
-
-}
-
-reloadCaddy() {
-  if [ $CADDY_ENABLED = "yes" ]; then
-    systemctl restart caddy.service || :
-    log "caddy restarted"
-  else
-    systemctl stop caddy.service || :
-    log "caddy stopped"
-  fi
 }
 
 reloadMongoDBExporter () {
   systemctl daemon-reload
-  log "start to reload mongodb_exporter"
   if [ $MONGODB_EXPORTER_ENABLED = "yes" ]; then
     systemctl restart mongodb_exporter.service || :
     log "mongodb_exporter restarted"
@@ -44,21 +31,19 @@ reloadMongoDBExporter () {
 }
 
 reloadMongoShake() {
-  log "start to reload mongoshake"
+  log "start to reload mongoshake on host:$MY_IP"
   # 当副本数量大于1时， mongoshake只能在hidden节点上开启
   local cnt=${#NODE_LIST[@]}
   if [ $MONGOSHAKE_ENABLED = "yes" ]; then
     if [ "$cnt" -gt 1 ]; then
       if ! msIsHostHidden "$MY_IP:$MY_PORT" -H $MY_IP -P $MY_PORT -u $DB_QC_USER -p $(cat $DB_QC_LOCAL_PASS_FILE); then 
-        return $ERR_MONGOSHAKE_ON_HIDDEN
+        log "Mongoshake must be run on Hidden---$MY_IP:$MY_PORT"
+        return 0
       fi
     fi
-    touch $MONGOSHAKE_FLAG_FILE
     systemctl restart mongoshake.service || :
     log "mongoshake started"
   else 
     systemctl stop mongoshake.service || :
   fi
-  rm -rf $MONGOSHAKE_FLAG_FILE || : 
-
 }

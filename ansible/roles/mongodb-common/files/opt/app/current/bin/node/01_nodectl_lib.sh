@@ -15,7 +15,7 @@ ERR_UPGRADE_SYS_PASSWORD=213
 ERR_UPGRADE_NET_PORT=214
 ERR_UPGRADE_MODE_STOP=215
 ERR_UPGRADE_DISK_SPACE=216
-ERR_MONGOSHAKE_ON_HIDDEN=217
+ERR_HEALTH_CHECK=217
 
 # path info
 MONGODB_DATA_PATH=/data/mongodb-data
@@ -31,13 +31,7 @@ HEALTH_CHECK_FLAG_FILE=/data/appctl/data/health.check.flag
 BACKUP_FLAG_FILE=/data/appctl/data/backup.flag
 MONGOSHAKE_FLAG_FILE=/data/appctl/data/mongoshake.flag
 
-# CONF_CADDY_INFO_FILE=/etc/caddy/Caddyfile
-# CONF_CADDY_ENV_INFO_FILE=/opt/app/current/bin/envs/caddy.env
-# CONF_NODE_EXPORTER_FILE=/opt/app/current/bin/envs/node_exporter.env
-# CONF_MONGOSHAKE_FILE=/data/appctl/data/mongoshake.conf
-
-#ZABBIX_CONF_PATH=/etc/zabbix
-#ZABBIX_LOG_PATH=/data/zabbix-log
+ZABBIX_LOG_PATH=/data/zabbix-logs
 CADDY_LOG_PATH=/data/caddy-logs
 
 # runMongoCmd
@@ -160,6 +154,7 @@ msIsHostHidden() {
   shift
   local tmpstr=$(runMongoCmd "JSON.stringify(rs.conf().members)" $@)
   local pname=$(echo $tmpstr | jq '.[] | select(.hidden==true) | .host' | sed s/\"//g)
+  log "hostinfo=$hostinfo, pname=$pname"
   test "$pname" = "$hostinfo"
 }
 
@@ -244,6 +239,16 @@ msGetServerStatus() {
   echo "$tmpstr"
 }
 
+isNetPortChanged() {
+  if isNodeFirstCreate; then return 1; fi
+  local tmpcnt
+  if ! diff $HOSTS_INFO_FILE $HOSTS_INFO_FILE.new; then
+    tmpcnt=$(diff $HOSTS_INFO_FILE $HOSTS_INFO_FILE.new | grep PORT | wc -l) || :
+    if (($tmpcnt > 0)); then return 0; fi
+  fi
+  return 1
+}
+
 createMongoConf() {
   local replication_replSetName
   local storage_engine
@@ -254,7 +259,7 @@ createMongoConf() {
   local replication_enableMajorityReadConcern
   local read_concern
   
-  net_port=$(getItemFromFile net_port $CONF_INFO_FILE)
+  net_port=$(getItemFromFile PORT $HOSTS_INFO_FILE)
   setParameter_cursorTimeoutMillis=$(getItemFromFile setParameter_cursorTimeoutMillis $CONF_INFO_FILE)
   replication_replSetName=$(getItemFromFile replication_replSetName $CONF_INFO_FILE)
   storage_engine=$(getItemFromFile storage_engine $CONF_INFO_FILE)

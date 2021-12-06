@@ -1,7 +1,7 @@
 # confd variables and funtions
 {{- $nodeRole := getv "/host/role" }}
 {{- $nodeIp := getv "/host/ip" }}
-{{- $nodePort := getv "/env/replica.conf.net.port" }}
+{{- $nodePort := getv "/env/conf.net.port" }}
 {{- $verticalScalingFlag := "" }}
 {{- $upgradingFlag := "" }}
 {{- $changeVxnetFlag := "" }}
@@ -59,6 +59,7 @@
 {{- end }}
 
 # repl_node
+{{- $tmpval = "" }}
 {{- range lsdir "/hosts/replica" -}}
   {{- $ip := getv (printf "/hosts/replica/%s/ip" .) -}}
   {{- $sid := getv (printf "/hosts/replica/%s/sid" .) -}}
@@ -76,4 +77,3 @@ host_port={{ $nodePort }}
 host_service_name=mongod
 host_repl_name=foobar
 host_node_list=({{ $replList }})
-host_ctl="01_nodectl_lib,02_nodectl_core,03_nodectl_mon,04_nodectl_bs,05_nodectl_third,06_nodectl_up,07_nodectl_cust,99_nodectl_config"
