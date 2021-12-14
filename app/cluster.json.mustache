@@ -71,7 +71,8 @@
             },
             "upgrade": {
                 "cmd": "appctl upgrade",
-                "timeout": 86400
+                "timeout": 86400,
+                "pre_check": "appctl upgradePreCheck"
             },
             "rollback": {
                 "cmd": "appctl rollback",
