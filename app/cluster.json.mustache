@@ -19,7 +19,7 @@
             "type":"kvm",
             "sriov_nic": true,
             "zone": "pek3",
-            "image": "img-3fix7yby"
+            "image": "img-3zcip2ma"
         },
         "instance_class":{{cluster.replica.instance_class}},
         "count":{{cluster.replica.count}},
@@ -71,8 +71,7 @@
             },
             "upgrade": {
                 "cmd": "appctl upgrade",
-                "timeout": 86400,
-                "pre_check": "appctl upgradePreCheck"
+                "timeout": 86400
             },
             "rollback": {
                 "cmd": "appctl rollback",
