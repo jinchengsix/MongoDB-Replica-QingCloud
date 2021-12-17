@@ -111,11 +111,8 @@ upgradePreCheck() {
 }
 
 upgrade() {
-  log "check disk usage"
-  if ! checkDiskUsage; then
-    log "Not enough disk space"
-    return $ERR_UPGRADE_DISK_SPACE
-  fi
+  upgradePreCheck
+  
   log "upgrade: init folders and files"
   clusterPreInit
   mkdir -p /data/upback && cp /data/pitrix.pwd /data/mongod_env /data/upback || :
