@@ -24,6 +24,7 @@ MONGODB_LOG_PATH=/data/mongodb-logs
 MONGODB_CONF_PATH=/data/mongodb-conf
 MONGOD_BIN=/opt/mongodb/current/bin/mongod
 DB_QC_LOCAL_PASS_FILE=/data/appctl/data/qc_local_pass
+DB_QC_LOCAL_PASS_FILE_OLD=/data/pitrix.pwd
 HOSTS_INFO_FILE=/data/appctl/data/hosts.info
 CONF_INFO_FILE=/data/appctl/data/conf.info
 NODE_FIRST_CREATE_FLAG_FILE=/data/appctl/data/node.first.create.flag
