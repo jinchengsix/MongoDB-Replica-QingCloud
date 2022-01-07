@@ -94,24 +94,14 @@ checkFvc() {
   return 1
 }
 
-upgradePreCheck() {
+upgrade() {
+
   # check disk usage
   log "check disk usage"
   if ! checkDiskUsage; then
     log "Not enough disk space"
     return $ERR_UPGRADE_DISK_SPACE
   fi
-
-  # checkFcv
-  log "check Fvc"
-  if ! checkFvc; then
-    log "Error with the version"
-    return $ERR_UPGRADE_VERSION
-  fi
-}
-
-upgrade() {
-  upgradePreCheck
   
   log "upgrade: init folders and files"
   clusterPreInit
@@ -128,6 +118,14 @@ upgrade() {
     return $ERR_UPGRADE_MODE_START
   fi
   retry 60 3 0 msGetHostDbVersion -P $NET_MAINTAIN_PORT
+
+  # checkFcv
+  log "check Fvc"
+  if ! checkFvc; then
+    log "Error with the version"
+    return $ERR_UPGRADE_VERSION
+  fi
+
   # change qc_master's password
   if ! msModifyLocalSysUser; then
     log "Can not modify qc_master's password"
