@@ -86,7 +86,7 @@ checkDiskUsage() {
 checkFvc() {
   # the version should be 3.6 or 3.4
   local jsstr="JSON.stringify(db.adminCommand({getParameter:1,featureCompatibilityVersion:1}))"
-  local res=$(runMongoCmd "$jsstr" -P $MY_PORT -u $DB_QC_USER -p $(cat $DB_QC_LOCAL_PASS_FILE_OLD))
+  local res=$(runMongoCmd "$jsstr" -P $NET_MAINTAIN_PORT)
   res=$(echo "$res" | jq '.featureCompatibilityVersion.version' | sed 's/"//g')
   if [ $res = "3.6" ] || [ $res = "3.4" ]; then
     return 0
