@@ -195,6 +195,14 @@
           "max": 65535
         },
         {
+          "key": "conf.rsName",
+          "label": "rsName",
+          "description": "The replicaSet name of MongoDB cluster,default foobar",
+          "type": "string",
+          "default": "foobar",
+          "required": "no"
+        },
+        {
           "key": "conf.userPass",
           "label": "User root's Password",
           "description": "Must contain a combination of uppercase and lowercase letters and numbers, special characters can be used (including @#%&*()_+-=), and the length is between 8-32",
@@ -452,6 +460,14 @@
               "key": "conf.replication.enableMajorityReadConcern",
               "label": "replication.enableMajorityReadConcern",
               "description": "Need restart mongod.service if being changed, default value: true",
+              "type": "string",
+              "default": "true",
+              "range": ["true", "false"],
+              "required": "no"
+            },{
+              "key": "conf.replication.failIndexKeyTooLong",
+              "label": "replication.failIndexKeyTooLong",
+              "description": "restriction for index length,default true",
               "type": "string",
               "default": "true",
               "range": ["true", "false"],

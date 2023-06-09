@@ -69,6 +69,10 @@ shellStopMongodForAdmin() {
   runuser mongod -g svc -s "/bin/bash" -c "$MONGOD_BIN -f $MONGODB_CONF_PATH/mongo-admin.conf --shutdown"
 }
 
+shellStopMongod() {
+  runuser mongod -g svc -s "/bin/bash" -c "$MONGOD_BIN -f $MONGODB_CONF_PATH/mongo.conf --shutdown"
+}
+
 # getSid
 # desc: get sid from NODE_LIST item
 # $1: a NODE_LIST item (5/192.168.1.2)
@@ -260,6 +264,7 @@ createMongoConf() {
   local operationProfiling_slowOpThresholdMs
   local replication_enableMajorityReadConcern
   local read_concern
+  local failIndexKeyTooLong
   
   net_port=$(getItemFromFile PORT $HOSTS_INFO_FILE)
   setParameter_cursorTimeoutMillis=$(getItemFromFile setParameter_cursorTimeoutMillis $CONF_INFO_FILE)
@@ -269,6 +274,8 @@ createMongoConf() {
   operationProfiling_slowOpThresholdMs=$(getItemFromFile operationProfiling_slowOpThresholdMs $CONF_INFO_FILE)
   replication_enableMajorityReadConcern=$(getItemFromFile replication_enableMajorityReadConcern $CONF_INFO_FILE)
   replication_oplogSizeMB=$(getItemFromFile replication_oplogSizeMB $CONF_INFO_FILE)
+  failIndexKeyTooLong=$(getItemFromFile replication_failIndexKeyTooLong $CONF_INFO_FILE.new)
+
   read_concern="enableMajorityReadConcern: $replication_enableMajorityReadConcern"
   
   cat > $MONGODB_CONF_PATH/mongo.conf <<MONGO_CONF
@@ -297,6 +304,7 @@ replication:
   $read_concern
 setParameter:
   cursorTimeoutMillis: $setParameter_cursorTimeoutMillis
+  failIndexKeyTooLong: $failIndexKeyTooLong
 MONGO_CONF
 
     cat > $MONGODB_CONF_PATH/mongo-admin.conf <<MONGO_CONF

@@ -51,7 +51,7 @@ changeMemberNetPort() {
   local replcfg
   retry 60 3 0 msGetHostDbVersion -P $NET_MAINTAIN_PORT
   replcfg=$(msGetReplCfgFromLocal)
-  echo "$replcfg" > /data/upback34/replcfg
+  echo "$replcfg" > /data/upback/replcfg
   local cnt=${#NODE_LIST[@]}
   local oldinfo=$(getItemFromFile NODE_LIST $HOSTS_INFO_FILE)
   local oldport=$(getItemFromFile PORT $HOSTS_INFO_FILE)
@@ -107,9 +107,16 @@ upgrade() {
   log "upgrade: init folders and files"
   clusterPreInit
 
-  mkdir -p /data/upback && cp -rf /data/pitrix.pwd /data/appctl /data/info /data/upback || :
-  rm -rf /data/mongodb-data
-  ln -s /data/mongodb /data/mongodb-data
+  mkdir -p /data/upback || :
+
+  if [ -d "/data/mongodb" ] && [ ! -L "/data/mongodb-data" ];then
+    # Compatible with old versions
+    cp -rf /data/pitrix.pwd /data/appctl /data/info /data/upback || :
+    rm -rf /data/mongodb-data
+    ln -s /data/mongodb /data/mongodb-data
+  fi
+
+  chown -R mongod:svc /data/mongodb-data
 
   # updat conf files
   updateHostsInfo

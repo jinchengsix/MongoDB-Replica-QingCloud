@@ -3,17 +3,22 @@ ERR_INVALID_PARAMS_MONGOCMD=201
 OLD_BIN_PATH=/opt/mongodb/bin
 NET_MAINTAIN_PORT=27099
 MONGO_DB_PATH=/data/mongodb
-RS_NAME=foobar
 DB_QC_USER=qc_master
 DB_QC_LOCAL_PASS_FILE=/data/pitrix.pwd
-OLD_REPL_CFG_FILE=/data/upback34/replcfg
-OLD_MONGOD_ENV_FILE=/data/upback34/mongod_env
+OLD_REPL_CFG_FILE=/data/upback/replcfg
+OLD_MONGOD_ENV_FILE=/data/upback/mongod_env
+ENV=/opt/app/current/bin/envs/node.env
 
 command=$1
 args="${@:2}"
 
 isDev() {
   [ "$APPCTL_ENV" == "dev" ]
+}
+
+getItemFromFile() {
+  local res=$(cat $2 | sed '/^'$1'=/!d;s/^'$1'=//')
+  echo "$res"
 }
 
 log() {
@@ -110,6 +115,7 @@ EOF
 }
 
 msUpdateReplCfgWhenUpgrade() {
+  local RS_NAME=$(getItemFromFile RS_NAME $ENV)
   local jsstr=$(cat <<EOF
 newlist=[$1]
 mydb = db.getSiblingDB('local')

@@ -44,10 +44,11 @@ EOF
 }
 
 showConnStr() {
+  local replication_replSetName=$(getItemFromFile replication_replSetName $CONF_INFO_FILE)
   local tmpstr=$(runMongoCmd "JSON.stringify(rs.isMaster().hosts)" -P $MY_PORT -u $DB_QC_USER -p $(cat $DB_QC_LOCAL_PASS_FILE))
   tmpstr=$(echo "$tmpstr" | jq '.[]' | sed 's/"//g')
   tmpstr=$(echo $tmpstr | sed 's/ /,/g')
-  tmpstr='mongodb://&lt;username&gt;:&lt;password&gt;@'$tmpstr'/?authSource=admin&replicaSet=foobar'
+  tmpstr='mongodb://&lt;username&gt;:&lt;password&gt;@'$tmpstr'/?authSource=admin&replicaSet='$replication_replSetName''
   tmpstr=$(cat <<EOF
 {
   "labels": ["Connection string"],

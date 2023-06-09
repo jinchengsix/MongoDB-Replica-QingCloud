@@ -1,5 +1,5 @@
 flush > /data/appctl/data/conf.info.new << CONF_INFO_NEW
-replication_replSetName=$host_repl_name
+replication_replSetName={{ getv "/env/conf.rsName" }}
 user_pass={{ getv "/env/conf.userPass" }}
 monitor_pass={{ getv "/env/conf.monitor.userPass" }}
 storage_engine={{ getv "/env/conf.storage.engine" }}

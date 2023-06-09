@@ -98,7 +98,7 @@ deleteNodeForRepl() {
 
 clusterPreInit() {
   # folder
-  mkdir -p $MONGODB_DATA_PATH $MONGODB_LOG_PATH $MONGODB_CONF_PATH
+  mkdir -p $MONGODB_DATA_PATH $MONGODB_LOG_PATH $MONGODB_CONF_PATH || :
   chown -R mongod:svc $MONGODB_DATA_PATH $MONGODB_LOG_PATH $MONGODB_CONF_PATH
   chown -R zabbix:zabbix $ZABBIX_LOG_PATH
   chown -R caddy:caddy $CADDY_LOG_PATH
@@ -207,6 +207,7 @@ msReplChangeConf() {
   local operationProfiling_mode
   local operationProfiling_mode_code
   local operationProfiling_slowOpThresholdMs
+  local failIndexKeyTooLong
 
   tmpcnt=$(diff $CONF_INFO_FILE $CONF_INFO_FILE.new | grep _pass | wc -l) || :
   if (($tmpcnt > 0)); then
@@ -242,6 +243,19 @@ EOF
     runMongoCmd "$jsstr" -P $MY_PORT -u $DB_QC_USER -p $(cat $DB_QC_LOCAL_PASS_FILE)
     log "setParameter.cursorTimeoutMillis changed"
   fi
+
+  # set failIndexKeyTooLong
+  tmpcnt=$(diff $CONF_INFO_FILE $CONF_INFO_FILE.new | grep replication_failIndexKeyTooLong | wc -l) || :
+  if (($tmpcnt > 0)); then
+    failIndexKeyTooLong=$(getItemFromFile replication_failIndexKeyTooLong $CONF_INFO_FILE.new)
+    jsstr=$(cat <<EOF
+db.adminCommand({setParameter:1,failIndexKeyTooLong:$failIndexKeyTooLong})
+EOF
+    )
+    runMongoCmd "$jsstr" -P $MY_PORT -u $DB_QC_USER -p $(cat $DB_QC_LOCAL_PASS_FILE)
+    log "failIndexKeyTooLong changed"
+  fi
+
 
   # operationProfiling_mode
   # operationProfiling_slowOpThresholdMs
@@ -323,6 +337,11 @@ isMongodNeedRestart() {
   if (($cnt > 0)); then return 0; else return 1; fi
 }
 
+isRsNameChanged() {
+    local cnt=$(diff $CONF_INFO_FILE $CONF_INFO_FILE.new | grep replication_replSetName | wc -l) || :
+  if (($cnt > 0)); then return 0; else return 1; fi
+}
+
 doWhenReplConfChanged() {
   if diff $CONF_INFO_FILE $CONF_INFO_FILE.new; then return 0; fi
   local rlist=($(getRollingList))
@@ -331,6 +350,20 @@ doWhenReplConfChanged() {
   local tmpip
   tmpip=$(getIp ${rlist[0]})
   if [ ! $tmpip = "$MY_IP" ]; then log "$MY_ROLE: skip changing configue"; return 0; fi
+
+  # check replicaSet name
+  log "checking on replicaSet name"
+  if isRsNameChanged; then 
+    for((i=0;i<$cnt;i++)); do
+      tmpip=$(getIp ${rlist[i]})
+      log "replicaSet name changed, handling $tmpip"
+      if (($i==0)); then
+        appctl updateRsNameConf
+      else
+        ssh root@$tmpip "appctl updateRsNameConf"
+      fi
+    done
+  fi
 
   if isMongodNeedRestart; then
     # oplogSizeMB check first
@@ -359,4 +392,43 @@ doWhenReplConfChanged() {
   fi
 }
 
+updateRsNameConf() {
+  # 1. disable health check
+  log "updateRsNameConf:disable health check"
+  rm -f /data/appctl/data/health.check.flag
 
+  # 2. shutdown mongod
+  log "updateRsNameConf:shutdown mongod"
+  shellStopMongod
+
+  # 3. start mongod as single instance
+  log "updateRsNameConf:start mongod as single instance"
+  shellStartMongodForAdmin
+
+  # 4. set up new replica set name 
+  log "updateRsNameConf:set up new replica set name"
+  local oldRSName=$(getItemFromFile replication_replSetName $CONF_INFO_FILE)
+  local newRSName=$(getItemFromFile replication_replSetName $CONF_INFO_FILE.new)
+  local jsstr=$(cat <<EOF
+var newId = '$newRSName'
+var doc = db.getSiblingDB("local").system.replset.findOne()
+var oldId = doc._id
+doc._id = newId
+db.getSiblingDB("local").system.replset.save(doc)
+db.getSiblingDB("local").system.replset.remove({_id: "$oldRSName"})
+EOF
+)
+  runMongoCmd "$jsstr" -P $NET_MAINTAIN_PORT
+
+  # 5. shutdown mongod
+  log "updateRsNameConf:shutdown mongod"
+  shellStopMongodForAdmin
+
+  # 6. start mongod with new config file
+  log "updateRsNameConf:start mongod with new config file"
+  appctl updateMongoConf && systemctl restart mongod.service
+
+  # 7. enable health check
+  log "updateRsNameConf:enable health check"
+  touch /data/appctl/data/health.check.flag
+}
